@@ -67,7 +67,7 @@ async def send_notification():
                     # Update the last notification time
                     last_notification_time = notification_time
 
-        # Wait for 60 seconds before checking the time again
+        # Wait for 2 seconds before checking the time again
         await asyncio.sleep(2)
 
 
