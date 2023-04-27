@@ -73,33 +73,29 @@ async def send_notification():
 
 @client.event
 async def on_voice_state_update(member, before, after):
-    # check if the member joined the specified voice channel
-    if (
-        before.channel != after.channel
-        and after.channel is not None
-        and after.channel.id == voice_channel_id
-    ):
-        text_channel = client.get_channel(text_channel_id)
-        if text_channel is not None:
-            role = discord.utils.get(member.guild.roles, name=role_name_vc_notify)
-            if role is not None:
-                for member_with_role in role.members:
-                    permissions = member.guild.me.guild_permissions
-                    if not permissions.send_messages:
-                        print("Error: Bot does not have permission to send DMs to members.")
-                        return
-                    try:
-                        dm_channel = await member_with_role.create_dm()
-                        await dm_channel.send(
-                            f"{member.display_name} joined {after.channel.name}!"
-                        )
-                    except discord.HTTPException as e:
-                        if e.status == 403:
-                            print("Error: Bot does not have permission to DM this member.")
-                        else:
-                            print(f"Error sending DM to {member_with_role.display_name}: {e}")
+    text_channel = client.get_channel(text_channel_id)
+    if text_channel is not None:
+        role = discord.utils.get(member.guild.roles, name=role_name_vc_notify)
+        if role is not None:
+            for member_with_role in role.members:
+                permissions = member.guild.me.guild_permissions
+                if not permissions.send_messages:
+                    print("Error: Bot does not have permission to send DMs to members.")
+                    return
+                try:
+                    dm_channel = await member_with_role.create_dm()
+                    await dm_channel.send(
+                        f"{member.display_name} joined {after.channel.name}!"
+                    )
+                except discord.HTTPException as e:
+                    if e.status == 403:
+                        print("Error: Bot does not have permission to DM this member.")
+                    else:
+                        print(f"Error sending DM to {member_with_role.display_name}: {e}")
         else:
-            print(f"Error: Text channel with ID {text_channel_id} not found.")
+            print(f"Error: Role with name {role_name_vc_notify} not found.")
+    else:
+        print(f"Error: Text channel with ID {text_channel_id} not found.")
 
 
 # start the bot
