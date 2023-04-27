@@ -70,6 +70,10 @@ async def send_notification():
         # Wait for 2 seconds before checking the time again
         await asyncio.sleep(2)
 
+#    Only send DM if:
+#    They are not the member who just joined the voice channel (member_with_role != member)
+#    They are not already in the specified voice channel (member_with_role.voice is None)
+#    They are not actually a bot (not member_with_role.bot)
 
 @client.event
 async def on_voice_state_update(member, before, after):
@@ -84,14 +88,19 @@ async def on_voice_state_update(member, before, after):
             role = discord.utils.get(member.guild.roles, name=role_name_vc_notify)
             if role is not None:
                 for member_with_role in role.members:
-                    permissions = member.guild.me.guild_permissions
-                    if not permissions.send_messages:
-                        print("Error: Bot does not have permission to send DMs to members.")
-                        return
-                    dm_channel = await member_with_role.create_dm()
-                    await dm_channel.send(
-                        f"{member.display_name} joined {after.channel.name}!"
-                    )
+                    if (
+                        member_with_role.voice is None
+                        and member_with_role != member
+                        and not member_with_role.bot
+                    ):
+                        permissions = member.guild.me.guild_permissions
+                        if not permissions.send_messages:
+                            print("Error: Bot does not have permission to send DMs to members.")
+                            return
+                        dm_channel = await member_with_role.create_dm()
+                        await dm_channel.send(
+                            f"{member.display_name} joined {after.channel.name}!"
+                        )
         else:
             print(f"Error: Text channel with ID {text_channel_id} not found.")
 
