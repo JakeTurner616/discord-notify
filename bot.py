@@ -42,11 +42,13 @@ async def send_notification():
         return
     
 
+    last_notification_time = None
+
     while True:
         # Get the current time in Mountain Time
         now = datetime.datetime.now(tz)
 
-        # Iterate over the notification times and check if the current time matches any of them
+        # Check if the current time matches any of the notification times
         for notification_time in notification_times:
             if now.strftime("%H:%M") == notification_time:
                 # Convert notification_time to 12-hour clock format
@@ -54,14 +56,19 @@ async def send_notification():
                     notification_time, "%H:%M"
                 ).strftime("%I:%M %p")
 
-                # Define the message to be sent
-                message = f"{mention} the time is now: {notification_time_12h}"
+                # Check if this is the first notification or if the last notification was not at this time
+                if last_notification_time is None or last_notification_time != notification_time:
+                    # Define the message to be sent
+                    message = f"{mention} the time is now: {notification_time_12h}"
 
-                # Send the message
-                await channel.send(message)
+                    # Send the message
+                    await channel.send(message)
 
-        # Wait for 60 seconds before checking the time again
-        await asyncio.sleep(60)
+                    # Update the last notification time
+                    last_notification_time = notification_time
+
+        # Wait for 2 seconds before checking the time again
+        await asyncio.sleep(2)
 
 
 @client.event
