@@ -42,13 +42,11 @@ async def send_notification():
         return
     
 
-    last_notification_time = None
-
     while True:
         # Get the current time in Mountain Time
         now = datetime.datetime.now(tz)
 
-        # Check if the current time matches any of the notification times
+        # Iterate over the notification times and check if the current time matches any of them
         for notification_time in notification_times:
             if now.strftime("%H:%M") == notification_time:
                 # Convert notification_time to 12-hour clock format
@@ -56,19 +54,14 @@ async def send_notification():
                     notification_time, "%H:%M"
                 ).strftime("%I:%M %p")
 
-                # Check if this is the first notification or if the last notification was not at this time
-                if last_notification_time is None or last_notification_time != notification_time:
-                    # Define the message to be sent
-                    message = f"{mention} the time is now: {notification_time_12h}"
+                # Define the message to be sent
+                message = f"{mention} the time is now: {notification_time_12h}"
 
-                    # Send the message
-                    await channel.send(message)
+                # Send the message
+                await channel.send(message)
 
-                    # Update the last notification time
-                    last_notification_time = notification_time
-
-        # Wait for 2 seconds before checking the time again
-        await asyncio.sleep(2)
+        # Wait for 60 seconds before checking the time again
+        await asyncio.sleep(60)
 
 
 @client.event
@@ -88,16 +81,10 @@ async def on_voice_state_update(member, before, after):
                     if not permissions.send_messages:
                         print("Error: Bot does not have permission to send DMs to members.")
                         return
-                    try:
-                        dm_channel = await member_with_role.create_dm()
-                        await dm_channel.send(
-                            f"{member.display_name} joined {after.channel.name}!"
-                        )
-                    except discord.HTTPException as e:
-                        if e.status == 403:
-                            print("Error: Bot does not have permission to DM this member.")
-                        else:
-                            print(f"Error sending DM to {member_with_role.display_name}: {e}")
+                    dm_channel = await member_with_role.create_dm()
+                    await dm_channel.send(
+                        f"{member.display_name} joined {after.channel.name}!"
+                    )
         else:
             print(f"Error: Text channel with ID {text_channel_id} not found.")
 
