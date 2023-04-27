@@ -77,6 +77,9 @@ async def on_voice_state_update(member, before, after):
     if text_channel is not None:
         role = discord.utils.get(member.guild.roles, name=role_name_vc_notify)
         if role is not None:
+            # Check if the voice state change was not due to a mute or unmute event
+            if before.mute != after.mute:
+                return
             for member_with_role in role.members:
                 permissions = member.guild.me.guild_permissions
                 if not permissions.send_messages:
